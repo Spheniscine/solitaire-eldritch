@@ -31,7 +31,7 @@ impl SkinTrait<Card> for Skin {
                     font_family: self.suits.font(),
                     position: if self.suits == SuitSkin::Shapes || self.suits == SuitSkin::Mystical {"relative"},
                     top: if self.suits == SuitSkin::Shapes {"0.11em"}
-                        else if self.suits == SuitSkin::Mystical {"-0.11em"},
+                        else if self.suits == SuitSkin::Mystical {"-0.105em"},
                     font_weight: if self.suits == SuitSkin::Mystical {"bold"},
                     {self.suits.suit_symbol(card.suit)}
                 }
