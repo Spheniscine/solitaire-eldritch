@@ -1,7 +1,7 @@
 use dioxus::prelude::*;
 use glam::Vec2;
 
-use crate::{components::{CARD_BORDER_RADIUS_RATIO, CARD_HEIGHT_RATIO, CardComponent, CardFrame, rem}, game::{ATTACK_SLOTS_PER_MONSTER, AnimationKey, Board, BoardPos, Card, ColorMode, DepotRole, MONSTER_RANK_START, NUM_DEPOTS, Skin}};
+use crate::{components::{CARD_BORDER_RADIUS_RATIO, CARD_HEIGHT_RATIO, CardComponent, CardFrame, Movement, rem}, game::{ATTACK_SLOTS_PER_MONSTER, AnimationAct, AnimationKey, Board, BoardPos, Card, ColorMode, DepotRole, MONSTER_RANK_START, NUM_DEPOTS, Skin}};
 
 #[component]
 pub fn BoardComponent(
@@ -107,11 +107,46 @@ pub fn BoardComponent(
         card_height + column_card_offset.y * d as f32
     } else {0.};
 
-    let anims = rsx!{}; // todo
-
     let color_mode = |card: Card| {
         if card.is_monster() {ColorMode::Dark} else {ColorMode::Light}
     };
+
+    let anims = board.animation_acts.iter().enumerate().map(|(i, act)| {
+        match act {
+            AnimationAct::Move { cards, pos1, pos2, rev } => {
+                let mut pos1 = *pos1;
+                let mut pos2 = *pos2;
+                let rev = *rev;
+                if rev { pos1.card_index += cards.len().saturating_sub(1); }
+                let nodes = cards.iter().map(move |card| {
+                    let p1 = get_pos(pos1.depot_index, pos1.card_index);
+                    let p2 = get_pos(pos2.depot_index, pos2.card_index);
+                    let res = rsx! {
+                        Movement {
+                            src_translate_vec: p1 - p2,
+                            CardComponent {
+                                position: p2,
+                                width: card_width,
+                                card: *card,
+                                color_mode: color_mode(*card),
+                                skin,
+                            }
+                        }
+                    };
+                    if !rev { pos1.card_index += 1; } else { pos1.card_index -= 1; }
+                    pos2.card_index += 1;
+                    res
+                });
+
+                rsx! {
+                    Fragment {
+                        key: "{animation_key},{i}", // needed to force remounts, so animations don't get "stale" and refuse to replay
+                        {nodes}
+                    }
+                }
+            },
+        }
+    });
 
     rsx! {
         div {
