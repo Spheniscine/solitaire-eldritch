@@ -1,10 +1,10 @@
-use std::time::Duration;
+use std::{ops::RangeInclusive, time::Duration};
 
-use rand::{Rng, RngExt, seq::SliceRandom};
+use rand::{Rng, seq::SliceRandom};
 use serde::{Deserialize, Serialize};
 use strum::IntoEnumIterator;
 
-use crate::game::{ATTACK_SLOTS_PER_MONSTER, Board, BoardPos, Card, DECK_SIZE, DepotRole, NUM_SUITS, RANK_MAX, RANK_MIN, RANKS, RunsTrait, Skin, Suit};
+use crate::game::{ATTACK_SLOTS_PER_MONSTER, Board, BoardPos, Card, DECK_SIZE, DepotRole, NUM_SUITS, RANK_MAX, RANKS, RunsTrait, Skin, Suit};
 
 pub const ANIMATION_DURATION: Duration = Duration::from_millis(200);
 pub type AnimationKey = u16;
@@ -49,32 +49,14 @@ pub struct GameState {
 
 impl GameState {
     pub fn new_deal(rng: &mut impl Rng) -> Vec<Card> {
-        // "banded" generation algorithm that prevents clumps?
         let mut deck = Vec::with_capacity(DECK_SIZE);
-
-        let mut attack_deck = Vec::with_capacity(DECK_SIZE - NUM_MONSTERS);
-        let mut monster_deck = Vec::with_capacity(NUM_MONSTERS);
-
-        for suit in Suit::iter() {
-            for rank in RANK_MIN..MONSTER_RANK_START {
-                attack_deck.push(Card { rank, suit });
-            }
-            for rank in MONSTER_RANK_START..=RANK_MAX {
-                monster_deck.push(Card { rank, suit });
+        for rank in RANKS {
+            for suit in Suit::iter() {
+                deck.push(Card { rank, suit });
             }
         }
 
-        attack_deck.shuffle(rng);
-        monster_deck.shuffle(rng);
-        let band_shift = rng.random_range(0..3);
-
-        for i in 0..DECK_SIZE / DepotRole::Tableau.number_of() {
-            for j in 0..DepotRole::Tableau.number_of() {
-                let is_monster = i > 0 && (i + j) % 3 == band_shift;
-                deck.push(if is_monster {monster_deck.pop().unwrap()} else {attack_deck.pop().unwrap()})
-            }
-        }
-        
+        deck.shuffle(rng);
         deck
     }
 
@@ -96,10 +78,37 @@ impl GameState {
         res
     }
 
+    fn is_misdeal(&self) -> bool {
+        // attempts to filter out problematic or unwinnable deals
+
+        const FRONT_MONSTER_RANGE: RangeInclusive<usize> = 1..=3;
+        const MAX_MONSTER_CLUMP: usize = 3; 
+
+        let mut front_monsters = DepotRole::Tableau.range()
+            .flat_map(|d| {
+                self.board.depots[d].iter().rev().take_while(|&&c| c.is_monster())
+            }).count();
+        // dioxus::logger::tracing::debug!("Front monsters: {}", front_monsters);
+        if !FRONT_MONSTER_RANGE.contains(&front_monsters) { return true; }
+
+        let mut runs = DepotRole::Tableau.range()
+            .flat_map(|d| {
+                self.board.depots[d].iter().map(|&c| c.is_monster()).runs()
+            });
+        if runs.any(|(is_monster, len)| is_monster && len > MAX_MONSTER_CLUMP) {
+            return true;
+        }
+
+        false
+    }
+
     pub fn new_game(&mut self) {
-        let deal = Self::new_deal(&mut rand::rng());
-        self.board = Board::from_deal(&deal);
-        self.deal = deal;
+        loop {
+            let deal = Self::new_deal(&mut rand::rng());
+            self.board = Board::from_deal(&deal);
+            self.deal = deal;
+            if !self.is_misdeal() { break; }
+        }
         self.history.clear();
         self.undo_stack.clear();
         self.already_won = false;
