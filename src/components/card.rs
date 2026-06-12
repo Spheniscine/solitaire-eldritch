@@ -56,10 +56,10 @@ pub fn CardComponent<C: PartialEq + Clone + 'static, S: SkinTrait<C> + 'static>(
 
                 onclick, ondoubleclick,
 
-                div { display: "flex", align_items: "center", {skin.render_rank(card)}},
-                div { display: "flex", align_items: "center", {skin.render_suit(card)}},
-                div { display: "flex", align_items: "center", {skin.render_suit(card)}},
-                div { display: "flex", align_items: "center", {skin.render_rank(card)}},
+                div { display: "flex", align_items: "center", pointer_events: "none", {skin.render_rank(&card)}},
+                div { display: "flex", align_items: "center", pointer_events: "none", {skin.render_suit(&card)}},
+                div { display: "flex", align_items: "center", pointer_events: "none", {skin.render_suit(&card)}},
+                div { display: "flex", align_items: "center", pointer_events: "none", {skin.render_rank(&card)}},
             }
         }
     } else {
