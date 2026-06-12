@@ -60,13 +60,23 @@ pub fn Hero() -> Element {
     rsx! {
         div {
             id: "hero",
-            for (i, suit) in iter {
+            for (i, suit) in iter.clone() {
                 CardComponent { 
                     position: Vec2::new(10., 10. + 15. * i as f32),
                     width: 11.,
-                    card: Card { rank: 1, suit, },
+                    card: Card { rank: 13, suit, },
                     skin,
                     color_mode: game::ColorMode::Dark,
+                }
+            }
+
+            for (i, suit) in iter {
+                CardComponent { 
+                    position: Vec2::new(30., 10. + 15. * i as f32),
+                    width: 11.,
+                    card: Card { rank: 1, suit, },
+                    skin,
+                    color_mode: game::ColorMode::Light,
                 }
             }
         }
