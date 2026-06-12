@@ -110,7 +110,7 @@ pub fn BoardComponent(
     let anims = rsx!{}; // todo
 
     let color_mode = |card: Card| {
-        if card.rank >= MONSTER_RANK_START {ColorMode::Dark} else {ColorMode::Light}
+        if card.is_monster() {ColorMode::Dark} else {ColorMode::Light}
     };
 
     rsx! {
