@@ -2,7 +2,7 @@ use dioxus::prelude::*;
 use glam::Vec2;
 use strum::IntoEnumIterator;
 
-use crate::{components::CardComponent, game::{Card, Skin, Suit}};
+use crate::{components::{BoardComponent, CardComponent}, game::{Board, Card, Skin, Suit}};
 
 mod game;
 mod components;
@@ -56,28 +56,15 @@ fn App() -> Element {
 #[component]
 pub fn Hero() -> Element {
     let skin = Skin::default();
-    let iter = Suit::iter().enumerate();
+    let board = Board::empty();
     rsx! {
         div {
             id: "hero",
-            for (i, suit) in iter.clone() {
-                CardComponent { 
-                    position: Vec2::new(10., 10. + 15. * i as f32),
-                    width: 11.,
-                    card: Card { rank: 13, suit, },
-                    skin,
-                    color_mode: game::ColorMode::Dark,
-                }
-            }
-
-            for (i, suit) in iter {
-                CardComponent { 
-                    position: Vec2::new(30., 10. + 15. * i as f32),
-                    width: 11.,
-                    card: Card { rank: 1, suit, },
-                    skin,
-                    color_mode: game::ColorMode::Light,
-                }
+            
+            BoardComponent { 
+                position: Vec2 { x: 0., y: 20. },
+                board: board,
+                skin,
             }
         }
     }
