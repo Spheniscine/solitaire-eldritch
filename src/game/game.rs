@@ -1,6 +1,10 @@
 use std::time::Duration;
 
-use crate::game::{ATTACK_SLOTS_PER_MONSTER, NUM_SUITS, RANK_MAX};
+use rand::{Rng, seq::SliceRandom};
+use serde::{Deserialize, Serialize};
+use strum::IntoEnumIterator;
+
+use crate::game::{ATTACK_SLOTS_PER_MONSTER, Board, BoardPos, Card, DECK_SIZE, DepotRole, NUM_SUITS, RANK_MAX, RANKS, RunsTrait, Skin, Suit};
 
 pub const ANIMATION_DURATION: Duration = Duration::from_millis(200);
 pub type AnimationKey = u16;
@@ -8,3 +12,118 @@ pub type AnimationKey = u16;
 pub const MONSTER_RANK_START: u8 = 10;
 pub const NUM_MONSTERS: usize = ((RANK_MAX + 1 - MONSTER_RANK_START) as usize) * NUM_SUITS;
 pub const GRAVEYARD_TARGET: usize = NUM_MONSTERS * (ATTACK_SLOTS_PER_MONSTER + 1);
+
+impl Card {
+    pub fn is_monster(self) -> bool {
+        self.rank >= MONSTER_RANK_START
+    }
+}
+
+#[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq)]
+pub struct ActionRecord {
+    pos1: BoardPos, pos2: BoardPos, rev: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
+pub enum ScreenState {
+    #[default] Game, 
+    Settings, Help,
+}
+
+#[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq)]
+pub struct GameState {
+    pub board: Board,
+    pub deal: Vec<Card>,
+    #[serde(skip)]
+    pub animation_key: AnimationKey, // used for syncing and to provide animator components with cycling keys
+    pub history: Vec<ActionRecord>,
+    pub undo_stack: Vec<usize>,
+    pub already_won: bool,
+    pub num_wins: i32,
+
+    pub screen_state: ScreenState,
+
+    pub allow_undo: bool,
+    pub skin: Skin,
+}
+
+impl GameState {
+    pub fn new_deal(rng: &mut impl Rng) -> Vec<Card> {
+        let mut deck = Vec::with_capacity(DECK_SIZE);
+        for rank in RANKS {
+            for suit in Suit::iter() {
+                deck.push(Card { rank, suit });
+            }
+        }
+
+        deck.shuffle(rng);
+        deck
+    }
+
+    pub fn init() -> Self {
+        let mut res = Self {
+            board: Board::empty(),
+            deal: vec![],
+            animation_key: 0,
+            history: vec![],
+            undo_stack: vec![],
+            already_won: false,
+            num_wins: 0,
+            screen_state: ScreenState::Game,
+            allow_undo: true,
+            skin: Skin::default(),
+        };
+
+        res.new_game();
+        res
+    }
+
+    fn is_misdeal(&self) -> bool {
+        // attempts to filter out obviously-unwinnable deals
+        // - deal has too many exposed monsters
+        // - deal has a group of monsters that would definitely overflow the slots
+
+        let mut front_monsters = DepotRole::Tableau.range()
+            .flat_map(|d| {
+                self.board.depots[d].iter().rev().take_while(|&&c| c.is_monster())
+            });
+        // dioxus::logger::tracing::debug!("Front monsters: {}", front_monsters.clone().count());
+        if front_monsters.nth(DepotRole::Monster.number_of()).is_some() { return true; }
+
+        let mut runs = DepotRole::Tableau.range()
+            .flat_map(|d| {
+                self.board.depots[d].iter().map(|&c| c.is_monster()).runs()
+            });
+        
+        if runs.any(|(is_monster, len)| is_monster && len > DepotRole::Monster.number_of()) {
+            return true;
+        }
+
+        false
+    }
+
+    pub fn new_game(&mut self) {
+        loop {
+            let deal = Self::new_deal(&mut rand::rng());
+            self.board = Board::from_deal(&deal);
+            self.deal = deal;
+            if !self.is_misdeal() { break; }
+        }
+        self.history.clear();
+        self.undo_stack.clear();
+        self.already_won = false;
+        // LocalStorage.save_game_state(&self);
+    }
+
+    pub fn is_busy(&self) -> bool {
+        self.is_acting()
+    }
+
+    pub fn is_acting(&self) -> bool {
+        !self.board.animation_acts.is_empty()
+    }
+
+    pub fn undo_possible(&self) -> bool {
+        self.allow_undo && !self.undo_stack.is_empty()
+    }
+}
