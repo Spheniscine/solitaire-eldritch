@@ -117,8 +117,9 @@ pub fn BoardComponent(
                 let mut pos1 = *pos1;
                 let mut pos2 = *pos2;
                 let rev = *rev;
-                if rev { pos1.card_index += cards.len().saturating_sub(1); }
+                if rev { pos1.card_index += cards.len(); }
                 let nodes = cards.iter().map(move |card| {
+                    if rev { pos1.card_index -= 1; }
                     let p1 = get_pos(pos1.depot_index, pos1.card_index);
                     let p2 = get_pos(pos2.depot_index, pos2.card_index);
                     let res = rsx! {
@@ -133,7 +134,7 @@ pub fn BoardComponent(
                             }
                         }
                     };
-                    if !rev { pos1.card_index += 1; } else { pos1.card_index -= 1; }
+                    if !rev { pos1.card_index += 1; }
                     pos2.card_index += 1;
                     res
                 });
