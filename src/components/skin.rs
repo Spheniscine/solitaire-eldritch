@@ -1,8 +1,25 @@
 use dioxus::prelude::*;
 
-use crate::{components::{Emoji, SkinTrait}, game::{Card, ColorMode, Skin, SuitSkin}};
+use crate::{components::{Emoji, SkinTrait}, game::{Card, ColorMode, RankSkin, Skin, SuitSkin}};
 
 pub const KATEX_MAIN: &str = "KaTeX_Main";
+
+#[component]
+fn OneSupSeven() -> Element {
+    rsx! {
+        span {
+            letter_spacing: "-0.05em",
+            "1",
+            span {
+                font_size: "0.65em",
+                position: "relative",
+                top: "-0.5em",
+                //left: "-0.1em",
+                "7"
+            }
+        }
+    }
+}
 
 impl SkinTrait<Card> for Skin {
     fn get_color(&self, card: &Card, mode: ColorMode) -> String {
@@ -13,7 +30,12 @@ impl SkinTrait<Card> for Skin {
         rsx! {
             span {
                 font_family: KATEX_MAIN,
-                {self.ranks.rank_text(card.rank)}
+
+                if self.ranks == RankSkin::Numbers && card.rank == 1 {
+                    OneSupSeven {}
+                } else {
+                    {self.ranks.rank_text(card.rank)}
+                }
             }
         }
     }

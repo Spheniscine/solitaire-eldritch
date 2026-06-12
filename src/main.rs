@@ -64,7 +64,7 @@ pub fn Hero() -> Element {
                 CardComponent { 
                     position: Vec2::new(10., 10. + 15. * i as f32),
                     width: 11.,
-                    card: Card { rank: 9, suit, },
+                    card: Card { rank: 1, suit, },
                     skin,
                 }
             }
