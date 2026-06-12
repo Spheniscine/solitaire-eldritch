@@ -42,7 +42,6 @@ pub fn Hero() -> Element {
         div {
             id: "hero",
             class: "select-none",
-            overflow: "hidden",
             if st.screen_state == ScreenState::Game {
                 div {
                     position: "absolute",
@@ -109,6 +108,7 @@ pub fn Hero() -> Element {
                     skin: st.skin,
                     onclick: move |pos| if clean {state.write().onclick(pos);},
                     // ondoubleclick: move |pos| if clean {state.write().ondoubleclick(pos);},
+                    oncontextmenu: move |pos| if clean {state.write().oncontextmenu(pos);},
                     animation_key: st.animation_key,
                     // is_won: st.is_won(),
                 }

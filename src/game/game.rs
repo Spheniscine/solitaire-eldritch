@@ -138,6 +138,12 @@ impl GameState {
     }
 
     pub fn can_move(&self, pos1: BoardPos, pos2: BoardPos) -> bool {
+        if pos1.depot_index == pos2.depot_index { return false; }
+        true // todo
+    }
+
+    pub fn can_rev_move(&self, pos1: BoardPos, pos2: BoardPos) -> bool {
+        if pos1.depot_index == pos2.depot_index { return false; }
         true // todo
     }
 
@@ -163,6 +169,19 @@ impl GameState {
             if self.can_select(pos) {
                 self.board.selected = Some(pos);
             }
+        }
+    }
+
+    // right-click is shortcut for reverse-stacking
+    pub fn oncontextmenu(&mut self, pos: BoardPos) {
+        if self.is_busy() { return; }
+
+        if let Some(src) = self.board.selected {
+            let dest = BoardPos { depot_index: pos.depot_index, card_index: pos.card_index.wrapping_add(1) };
+            if !self.can_rev_move(src, dest) { return; }
+
+            self.board.do_move(src, dest, true);
+            self.history.push(ActionRecord { pos1: src, pos2: dest, rev: true });
         }
     }
 
