@@ -66,6 +66,7 @@ pub fn Hero() -> Element {
                     width: 11.,
                     card: Card { rank: 1, suit, },
                     skin,
+                    color_mode: game::ColorMode::Dark,
                 }
             }
         }

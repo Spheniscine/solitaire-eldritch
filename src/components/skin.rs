@@ -4,6 +4,7 @@ use crate::{components::{Emoji, SkinTrait}, game::{Card, ColorMode, RankSkin, Sk
 
 pub const KATEX_MAIN: &str = "KaTeX_Main";
 
+/// special rendering for rank 1 by putting a superscript 7 after it, as a reminder of the special ability in this game
 #[component]
 fn OneSupSeven() -> Element {
     rsx! {
@@ -53,7 +54,7 @@ impl SkinTrait<Card> for Skin {
                     font_family: self.suits.font(),
                     position: if self.suits == SuitSkin::Shapes || self.suits == SuitSkin::Mystique {"relative"},
                     top: if self.suits == SuitSkin::Shapes {"0.11em"}
-                        else if self.suits == SuitSkin::Mystique {"-0.105em"},
+                        else if self.suits == SuitSkin::Mystique {"-0.1em"},
                     font_weight: if self.suits == SuitSkin::Mystique {"bold"},
                     {self.suits.suit_symbol(card.suit)}
                 }

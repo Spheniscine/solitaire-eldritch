@@ -20,6 +20,9 @@ pub fn CardComponent<C: PartialEq + Clone + 'static, S: SkinTrait<C> + 'static>(
     skin: S,
 
     number_hint: Option<usize>,
+    #[props(default = ColorMode::Light)]
+    color_mode: ColorMode,
+
     #[props(default)]
     onclick: EventHandler<MouseEvent>,
     #[props(default)]
@@ -37,10 +40,11 @@ pub fn CardComponent<C: PartialEq + Clone + 'static, S: SkinTrait<C> + 'static>(
                 position: "absolute",
                 top: rem(position.y),
                 left: rem(position.x),
-                background_color: "#fff",
+                background_color: color_mode.choose("#fff", "#101"),
                 width: pt(11.),
                 height: pt(12.),
-                border: "{pt(0.25)} solid #000",
+                border: "{pt(0.25)} solid",
+                border_color: color_mode.choose("#000", "#868"),
                 border_radius: rem(width * CARD_BORDER_RADIUS_RATIO),
                 display: "grid",
                 grid_template_columns: "50% 50%",
@@ -48,7 +52,7 @@ pub fn CardComponent<C: PartialEq + Clone + 'static, S: SkinTrait<C> + 'static>(
                 font_size: pt(5.),
                 text_align: "center",
                 padding: pt(0.25),
-                color: skin.get_color(card, ColorMode::Dark),
+                color: skin.get_color(card, !color_mode),
 
                 onclick, ondoubleclick,
 
