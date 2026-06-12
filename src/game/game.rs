@@ -133,17 +133,28 @@ impl GameState {
     }
 
     pub fn can_select(&self, pos: BoardPos) -> bool {
+        let depot = pos.depot_index;
+        let ord = pos.card_index;
+
+        if ord >= self.board.depots[depot].len() {
+            return false;
+        }
+
         true // todo
     }
 
     pub fn can_move(&self, pos1: BoardPos, pos2: BoardPos) -> bool {
         if pos1.depot_index == pos2.depot_index { return false; }
+        let depot1 = &self.board.depots[pos1.depot_index];
+        let depot2 = &self.board.depots[pos2.depot_index];
+        let num_moved = depot1.len() - pos1.card_index;
+        if pos2.card_index != depot2.len() { return false; }
+        
         true // todo
     }
 
     pub fn can_rev_move(&self, pos1: BoardPos, pos2: BoardPos) -> bool {
-        if pos1.depot_index == pos2.depot_index { return false; }
-        true // todo
+        self.can_move(pos1, pos2) // todo
     }
 
     pub fn onclick(&mut self, pos: BoardPos) {
