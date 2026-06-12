@@ -29,10 +29,10 @@ impl SkinTrait<Card> for Skin {
             rsx! {
                 span {
                     font_family: self.suits.font(),
-                    position: if self.suits == SuitSkin::Shapes || self.suits == SuitSkin::Mystical {"relative"},
+                    position: if self.suits == SuitSkin::Shapes || self.suits == SuitSkin::Mystique {"relative"},
                     top: if self.suits == SuitSkin::Shapes {"0.11em"}
-                        else if self.suits == SuitSkin::Mystical {"-0.105em"},
-                    font_weight: if self.suits == SuitSkin::Mystical {"bold"},
+                        else if self.suits == SuitSkin::Mystique {"-0.105em"},
+                    font_weight: if self.suits == SuitSkin::Mystique {"bold"},
                     {self.suits.suit_symbol(card.suit)}
                 }
             }

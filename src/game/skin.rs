@@ -32,7 +32,7 @@ impl RankSkin {
 #[repr(u8)]
 pub enum SuitSkin {
     #[default]
-    Mystical,
+    Mystique,
     Animals,
     Shapes,
     Traditional,
@@ -41,7 +41,7 @@ pub enum SuitSkin {
 impl SuitSkin {
     pub fn suit_symbol(self, suit: Suit) -> &'static str {
         match self {
-            SuitSkin::Mystical => {
+            SuitSkin::Mystique => {
                 match suit {
                     Suit::Clubs => "♐︎",
                     Suit::Diamonds => "♉︎",
@@ -78,7 +78,7 @@ impl SuitSkin {
 
     pub fn font(self) -> &'static str {
         match self {
-            SuitSkin::Mystical => "'Noto Sans Symbols'",
+            SuitSkin::Mystique => "'Noto Sans Symbols'",
             SuitSkin::Animals => "'Noto Color Emoji'",
             SuitSkin::Shapes => "'Noto Sans Symbols 2'",
             SuitSkin::Traditional => "KaTeX_Main", // links to custom version of Katex/MLModern that has filled card suits
