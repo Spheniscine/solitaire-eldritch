@@ -153,8 +153,8 @@ impl GameState {
             let dest = BoardPos { depot_index: pos.depot_index, card_index: pos.card_index.wrapping_add(1) };
             if !self.can_move(src, dest) { return; }
 
-            self.board.do_move(src, dest, false);
-            self.history.push(ActionRecord { pos1: src, pos2: dest, rev: false });
+            self.undo_stack.push(self.history.len());
+            self.do_move_raw(src, dest, false);
         } else {
             if self.can_select(pos) {
                 self.board.selected = Some(pos);
@@ -170,8 +170,8 @@ impl GameState {
             let dest = BoardPos { depot_index: pos.depot_index, card_index: pos.card_index.wrapping_add(1) };
             if !self.can_rev_move(src, dest) { return; }
 
-            self.board.do_move(src, dest, true);
-            self.history.push(ActionRecord { pos1: src, pos2: dest, rev: true });
+            self.undo_stack.push(self.history.len());
+            self.do_move_raw(src, dest, true);
         }
     }
 
