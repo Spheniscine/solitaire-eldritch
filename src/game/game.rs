@@ -82,12 +82,14 @@ impl GameState {
         // attempts to filter out obviously-unwinnable deals
 
         // - deal has too many exposed monsters
+        // (or no exposed monsters? isn't necessarily unwinnable, but very hard as there are no free cells)
         let mut front_monsters = DepotRole::Tableau.range()
             .flat_map(|d| {
                 self.board.depots[d].iter().rev().take_while(|&&c| c.is_monster())
-            });
-        // dioxus::logger::tracing::debug!("Front monsters: {}", front_monsters.clone().count());
-        if front_monsters.nth(DepotRole::Monster.number_of()).is_some() { return true; }
+            }).count();
+        // dioxus::logger::tracing::debug!("Front monsters: {}", front_monsters);
+        if front_monsters == 0 { return true; }
+        if front_monsters > DepotRole::Monster.number_of() { return true; }
 
         // - deal has a group of monsters that would definitely overflow the slots
         let mut runs = DepotRole::Tableau.range()
@@ -124,5 +126,71 @@ impl GameState {
 
     pub fn undo_possible(&self) -> bool {
         self.allow_undo && !self.undo_stack.is_empty()
+    }
+
+    fn do_move_raw(&mut self, pos1: BoardPos, pos2: BoardPos, rev: bool) {
+        self.board.do_move(pos1, pos2, rev);
+        self.history.push(ActionRecord { pos1, pos2, rev })
+    }
+
+    pub fn can_select(&self, pos: BoardPos) -> bool {
+        true // todo
+    }
+
+    pub fn can_move(&self, pos1: BoardPos, pos2: BoardPos) -> bool {
+        true // todo
+    }
+
+    pub fn onclick(&mut self, pos: BoardPos) {
+        if self.is_busy() { return; }
+
+        if let Some(src) = self.board.selected {
+            if pos == src { 
+                self.board.selected = None; 
+                return;
+            }
+            if src.depot_index == pos.depot_index && self.can_select(pos) {
+                self.board.selected = Some(pos);
+                return;
+            }
+
+            let dest = BoardPos { depot_index: pos.depot_index, card_index: pos.card_index.wrapping_add(1) };
+            if !self.can_move(src, dest) { return; }
+
+            self.board.do_move(src, dest, false);
+            self.history.push(ActionRecord { pos1: src, pos2: dest, rev: false });
+        } else {
+            if self.can_select(pos) {
+                self.board.selected = Some(pos);
+            }
+        }
+    }
+
+    pub fn check_auto_moves(&mut self) {
+        if self.is_busy() { return; }
+        //todo
+    }
+
+    pub fn is_won(&self) -> bool {
+        false
+        //todo
+    }
+
+    pub fn advance_animations(&mut self, key: AnimationKey) {
+        if key != self.animation_key { return; }
+        self.animation_key = self.animation_key.wrapping_add(1);
+        
+        self.board.advance_actions();
+
+        if self.is_won() {
+            if !self.already_won {
+                self.num_wins += 1;
+                self.already_won = true;
+            }
+        } else {
+            self.check_auto_moves();
+        }
+
+        // if !self.is_busy() { LocalStorage.save_game_state(&self); }
     }
 }
