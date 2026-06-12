@@ -80,9 +80,8 @@ impl GameState {
 
     fn is_misdeal(&self) -> bool {
         // attempts to filter out obviously-unwinnable deals
-        // - deal has too many exposed monsters
-        // - deal has a group of monsters that would definitely overflow the slots
 
+        // - deal has too many exposed monsters
         let mut front_monsters = DepotRole::Tableau.range()
             .flat_map(|d| {
                 self.board.depots[d].iter().rev().take_while(|&&c| c.is_monster())
@@ -90,11 +89,11 @@ impl GameState {
         // dioxus::logger::tracing::debug!("Front monsters: {}", front_monsters.clone().count());
         if front_monsters.nth(DepotRole::Monster.number_of()).is_some() { return true; }
 
+        // - deal has a group of monsters that would definitely overflow the slots
         let mut runs = DepotRole::Tableau.range()
             .flat_map(|d| {
                 self.board.depots[d].iter().map(|&c| c.is_monster()).runs()
             });
-        
         if runs.any(|(is_monster, len)| is_monster && len > DepotRole::Monster.number_of()) {
             return true;
         }
