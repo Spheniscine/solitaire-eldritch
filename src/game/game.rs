@@ -4,7 +4,7 @@ use rand::{Rng, seq::SliceRandom};
 use serde::{Deserialize, Serialize};
 use strum::IntoEnumIterator;
 
-use crate::{components::LocalStorage, game::{ATTACK_SLOTS_PER_MONSTER, Board, BoardPos, Card, DECK_SIZE, DepotRole, NUM_SUITS, RANK_MAX, RANKS, RunsTrait, Skin, Suit}};
+use crate::{components::LocalStorage, game::{ATTACK_SLOTS_PER_MONSTER, Board, BoardPos, Card, DECK_SIZE, DepotRole, NUM_SUITS, RANK_MAX, RANKS, RunsTrait, SettingsState, Skin, Suit}};
 
 pub const ANIMATION_DURATION: Duration = Duration::from_millis(200);
 pub type AnimationKey = u16;
@@ -324,5 +324,18 @@ impl GameState {
         }
 
         if !self.is_busy() { LocalStorage.save_game_state(&self); }
+    }
+
+    pub fn new_settings_state(&self) -> SettingsState {
+        SettingsState {
+            allow_undo: self.allow_undo,
+            skin: self.skin,
+        }
+    }
+
+    pub fn apply_settings(&mut self, settings: &SettingsState){
+        self.allow_undo = settings.allow_undo;
+        self.skin = settings.skin;
+        LocalStorage.save_game_state(&self);
     }
 }

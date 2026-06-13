@@ -27,12 +27,6 @@ impl Suit {
             _ => None,
         }
     }
-    pub fn color(self) -> SuitColor {
-        match self {
-            Suit::Clubs | Suit::Spades => SuitColor::Black,
-            Suit::Diamonds | Suit::Hearts => SuitColor::Red,
-        }
-    }
 }
 
 impl Serialize for Suit {
@@ -61,8 +55,6 @@ impl<'de> Deserialize<'de> for Suit {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug)]
-pub enum SuitColor { Black, Red }
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub struct Card {

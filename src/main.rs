@@ -1,8 +1,6 @@
 use dioxus::prelude::*;
-use glam::Vec2;
-use strum::IntoEnumIterator;
 
-use crate::{components::{BoardComponent, CardComponent, Hero}, game::{Board, Card, Skin, Suit}};
+use crate::components::Hero;
 
 mod game;
 mod components;

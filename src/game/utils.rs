@@ -1,4 +1,4 @@
-use std::{iter::Peekable, ops::Range};
+use std::iter::Peekable;
 
 pub struct Runs<I: Iterator> {
     peeker: Peekable<I>
