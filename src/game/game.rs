@@ -4,7 +4,7 @@ use rand::{Rng, seq::SliceRandom};
 use serde::{Deserialize, Serialize};
 use strum::IntoEnumIterator;
 
-use crate::game::{ATTACK_SLOTS_PER_MONSTER, Board, BoardPos, Card, DECK_SIZE, DepotRole, NUM_SUITS, RANK_MAX, RANKS, RunsTrait, Skin, Suit};
+use crate::{components::LocalStorage, game::{ATTACK_SLOTS_PER_MONSTER, Board, BoardPos, Card, DECK_SIZE, DepotRole, NUM_SUITS, RANK_MAX, RANKS, RunsTrait, Skin, Suit}};
 
 pub const ANIMATION_DURATION: Duration = Duration::from_millis(200);
 pub type AnimationKey = u16;
@@ -120,7 +120,7 @@ impl GameState {
         self.already_won = false;
         self.check_auto_moves();
 
-        // if !self.is_busy() { LocalStorage.save_game_state(&self); }
+        if !self.is_busy() { LocalStorage.save_game_state(&self); }
     }
 
     pub fn is_busy(&self) -> bool {
@@ -230,6 +230,27 @@ impl GameState {
         }
     }
 
+    pub fn undo(&mut self) {
+        if self.is_busy() || !self.undo_possible() { return; }
+        let Some(target_len) = self.undo_stack.pop() else {return};
+        while self.history.len() > target_len {
+            let rec = self.history.pop().unwrap();
+            self.board.do_move(rec.pos2, rec.pos1, rec.rev);
+            self.board.advance_actions(); // no animation, as repeated card moves on same card causes problems
+        }
+        LocalStorage.save_game_state(&self);
+    }
+
+    pub fn restart(&mut self) {
+        if self.history.is_empty() || !self.undo_possible() { return; }
+        self.board = Board::from_deal(&self.deal);
+        self.history.clear();
+        self.undo_stack.clear();
+
+        self.check_auto_moves();
+        if !self.is_busy() { LocalStorage.save_game_state(&self); }
+    }
+
     pub fn check_auto_moves(&mut self) {
         if self.is_busy() { return; }
         if self.is_over() { return; }
@@ -247,9 +268,11 @@ impl GameState {
             // special power of aces: if match monster's suit, is worth 7
             let val = |c: Card| if c.rank == 1 && c.suit == cm.suit {7} else {c.rank};
             if val(ca1) + val(ca2) == cm.rank {
+                let mut dest = self.board.top_pos(DepotRole::Graveyard.id(0));
                 for d in [dm, da1, da2] {
                     self.do_move_raw(BoardPos::new(d, 0), 
-                        self.board.top_pos(DepotRole::Graveyard.id(0)), false);
+                        dest, false);
+                    dest.card_index += 1;
                 }
                 return;
             }
@@ -299,6 +322,6 @@ impl GameState {
             self.check_auto_moves();
         }
 
-        // if !self.is_busy() { LocalStorage.save_game_state(&self); }
+        if !self.is_busy() { LocalStorage.save_game_state(&self); }
     }
 }
