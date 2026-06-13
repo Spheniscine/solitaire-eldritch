@@ -118,7 +118,9 @@ impl GameState {
         self.history.clear();
         self.undo_stack.clear();
         self.already_won = false;
-        // LocalStorage.save_game_state(&self);
+        self.check_auto_moves();
+
+        // if !self.is_busy() { LocalStorage.save_game_state(&self); }
     }
 
     pub fn is_busy(&self) -> bool {
@@ -206,12 +208,47 @@ impl GameState {
     pub fn check_auto_moves(&mut self) {
         if self.is_busy() { return; }
         if self.is_over() { return; }
-        //todo
+        
+        // check if monsters are defeated
+        for i in 0..DepotRole::Monster.number_of() {
+            let dm = DepotRole::Monster.id(i);
+            let da1 = DepotRole::Attack.id(i * ATTACK_SLOTS_PER_MONSTER);
+            let da2 = DepotRole::Attack.id(i * ATTACK_SLOTS_PER_MONSTER + 1);
+
+            let Some(&cm) = self.board.depots[dm].last() else {continue};
+            let Some(&ca1) = self.board.depots[da1].last() else {continue};
+            let Some(&ca2) = self.board.depots[da2].last() else {continue};
+
+            // special power of aces: if match monster's suit, is worth 7
+            let val = |c: Card| if c.rank == 1 && c.suit == cm.suit {7} else {c.rank};
+            if val(ca1) + val(ca2) == cm.rank {
+                for d in [dm, da1, da2] {
+                    self.do_move_raw(BoardPos::new(d, 0), 
+                        self.board.top_pos(DepotRole::Graveyard.id(0)), false);
+                }
+                return;
+            }
+        }
+
+        // check if monster is exposed
+        for tableau in DepotRole::Tableau.range() {
+            let Some(&card) = self.board.depots[tableau].last() else {continue};
+            if card.is_monster() {
+                let dest = DepotRole::Monster.range().find(|&d| {
+                    self.board.depots[d].is_empty()
+                }).unwrap_or(DepotRole::Death.id(0));
+                self.do_move_raw(
+                    self.board.last_pos(tableau),
+                    self.board.top_pos(dest),
+                    false
+                );
+                return;
+            }
+        }
     }
 
     pub fn is_won(&self) -> bool {
-        false
-        //todo
+        self.board.depots[DepotRole::Graveyard.id(0)].len() == GRAVEYARD_TARGET
     }
 
     pub fn is_lost(&self) -> bool {
