@@ -110,7 +110,8 @@ pub fn Hero() -> Element {
                     // ondoubleclick: move |pos| if clean {state.write().ondoubleclick(pos);},
                     oncontextmenu: move |pos| if clean {state.write().oncontextmenu(pos);},
                     animation_key: st.animation_key,
-                    // is_won: st.is_won(),
+                    is_won: st.is_won(),
+                    is_lost: st.is_lost(),
                 }
             } else if st.screen_state == ScreenState::Settings {
                 // Settings { 

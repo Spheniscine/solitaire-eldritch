@@ -77,7 +77,9 @@ impl GameState {
         res.new_game();
 
         // testing death; todo remove
-        res.board.depots[DepotRole::Death.id(0)].push(Card { rank: 13, suit: Suit::Spades });
+        res.board.animation_acts.push(crate::game::AnimationAct::Move { 
+            cards: vec![Card { rank: 13, suit: Suit::Hearts }], pos1: BoardPos::new(0, 13), 
+            pos2: BoardPos::new(DepotRole::Death.id(0), 0), rev: false });
 
         res
     }
@@ -213,8 +215,7 @@ impl GameState {
     }
 
     pub fn is_lost(&self) -> bool {
-        false
-        //todo
+        !self.board.depots[DepotRole::Death.id(0)].is_empty()
     }
 
     pub fn is_over(&self) -> bool {

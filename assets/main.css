@@ -185,3 +185,6 @@ button {
 .death {
     transform: scale(4.13) rotate(13deg);
 }
+.death-anim {
+    animation: 0.2s death;
+}

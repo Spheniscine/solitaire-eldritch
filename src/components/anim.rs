@@ -16,3 +16,16 @@ pub fn Movement(
         }
     }
 }
+
+#[component]
+pub fn TranslateVars(
+    src_translate_vec: Vec2,
+    children: Element,
+) -> Element {
+    rsx! {
+        div {
+            style: "--translateX: {rem(src_translate_vec.x)}; --translateY: {rem(src_translate_vec.y)};",
+            {children},
+        }
+    }
+}

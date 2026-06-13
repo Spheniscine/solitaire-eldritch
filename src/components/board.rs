@@ -1,7 +1,7 @@
 use dioxus::prelude::*;
 use glam::Vec2;
 
-use crate::{components::{CARD_BORDER_RADIUS_RATIO, CARD_HEIGHT_RATIO, CardComponent, CardFrame, Movement, rem}, game::{ATTACK_SLOTS_PER_MONSTER, AnimationAct, AnimationKey, Board, BoardPos, Card, ColorMode, DepotRole, MONSTER_RANK_START, NUM_DEPOTS, Skin}};
+use crate::{components::{CARD_BORDER_RADIUS_RATIO, CARD_HEIGHT_RATIO, CardComponent, CardFrame, Movement, TranslateVars, rem}, game::{ATTACK_SLOTS_PER_MONSTER, AnimationAct, AnimationKey, Board, BoardPos, Card, ColorMode, DepotRole, MONSTER_RANK_START, NUM_DEPOTS, Skin}};
 
 #[component]
 fn IsDeathDepot(depot: usize, children: Element) -> Element {
@@ -68,7 +68,7 @@ pub fn BoardComponent(
             },
             DepotRole::Graveyard => Vec2::new(pos_x(7), pos_y(0)),
             DepotRole::Death => {
-                Vec2::new(50. - card_width / 2., 26.)
+                Vec2::new(50. - card_width / 2., 30.)
             },
         }
     };
@@ -142,14 +142,28 @@ pub fn BoardComponent(
                     let p1 = get_pos(pos1.depot_index, pos1.card_index);
                     let p2 = get_pos(pos2.depot_index, pos2.card_index);
                     let res = rsx! {
-                        Movement {
-                            src_translate_vec: p1 - p2,
-                            CardComponent {
-                                position: p2,
-                                width: card_width,
-                                card: *card,
-                                color_mode: color_mode(*card),
-                                skin,
+                        if is_death(pos2.depot_index) {
+                            TranslateVars { 
+                                src_translate_vec: p1 - p2,
+                                CardComponent {
+                                    position: p2,
+                                    width: card_width,
+                                    card: *card,
+                                    color_mode: color_mode(*card),
+                                    skin,
+                                    class: "death-anim",
+                                }
+                            }
+                        } else {
+                            Movement {
+                                src_translate_vec: p1 - p2,
+                                CardComponent {
+                                    position: p2,
+                                    width: card_width,
+                                    card: *card,
+                                    color_mode: color_mode(*card),
+                                    skin,
+                                }
                             }
                         }
                     };
@@ -223,7 +237,7 @@ pub fn BoardComponent(
                             oncontextmenu.call(BoardPos::new(depot, i))
                         },
 
-                        is_death: is_death(depot),
+                        class: if is_death(depot) {"death"},
                     }
                 }
             }
@@ -243,6 +257,22 @@ pub fn BoardComponent(
                     border_radius: rem(2.),
                     text_align: "center",
                     "YOU WIN!",
+                }
+            }
+
+            if is_lost {
+                div {
+                    position: "absolute",
+                    top: rem(25.),
+                    left: rem(17.5),
+                    width: rem(59.),
+                    background_color: "#000",
+                    padding: rem(3.),
+                    color: "#fff",
+                    font_size: rem(7.),
+                    border_radius: rem(2.),
+                    text_align: "center",
+                    "GAME OVER",
                 }
             }
         }
