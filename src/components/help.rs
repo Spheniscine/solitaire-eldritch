@@ -120,7 +120,7 @@ pub fn Help(game_state: Signal<GameState>) -> Element {
 
                 p {
                     {aces_text}, " are normally of value 1, but it has a special ability: if it’s in an attack slot for a monster of ", 
-                    Emph {"matching suit"}, ", its value "Emph {"becomes 7"},". NOTE: You must use this ability at least twice in a winning game."
+                    Emph {"matching suit"}, ", its value ",Emph {"becomes 7"},". NOTE: You must use this ability at least twice in a winning game."
                 }
 
                 p {
