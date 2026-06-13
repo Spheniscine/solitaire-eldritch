@@ -187,7 +187,8 @@ impl GameState {
     }
 
     pub fn can_rev_move(&self, pos1: BoardPos, pos2: BoardPos) -> bool {
-        self.can_move(self.board.last_pos(pos1.depot_index), pos2)
+        DepotRole::role(pos2.depot_index) == Some(DepotRole::Tableau) &&
+            self.can_move(self.board.last_pos(pos1.depot_index), pos2)
     }
 
     pub fn onclick(&mut self, pos: BoardPos) {
