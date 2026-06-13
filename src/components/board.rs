@@ -4,6 +4,21 @@ use glam::Vec2;
 use crate::{components::{CARD_BORDER_RADIUS_RATIO, CARD_HEIGHT_RATIO, CardComponent, CardFrame, Movement, rem}, game::{ATTACK_SLOTS_PER_MONSTER, AnimationAct, AnimationKey, Board, BoardPos, Card, ColorMode, DepotRole, MONSTER_RANK_START, NUM_DEPOTS, Skin}};
 
 #[component]
+fn IsDeathDepot(depot: usize, children: Element) -> Element {
+    let is_death = DepotRole::role(depot) == Some(DepotRole::Death);
+    rsx! {
+        if is_death {
+            div {
+                class: "death",
+                {children}
+            }
+        } else {
+            {children}
+        }
+    }
+}
+
+#[component]
 pub fn BoardComponent(
     position: Vec2,
     board: Board,
@@ -53,7 +68,7 @@ pub fn BoardComponent(
             },
             DepotRole::Graveyard => Vec2::new(pos_x(7), pos_y(0)),
             DepotRole::Death => {
-                Vec2::new(13., 13.) // todo
+                Vec2::new(50. - card_width / 2., 26.)
             },
         }
     };
@@ -95,6 +110,10 @@ pub fn BoardComponent(
 
     let is_face_up = |depot: usize| {
         DepotRole::role(depot).unwrap().is_face_up()
+    };
+
+    let is_death = |depot: usize| {
+        DepotRole::role(depot) == Some(DepotRole::Death)
     };
 
     let selected_height = if let Some(BoardPos { depot_index, card_index }) = board.selected {
@@ -185,6 +204,7 @@ pub fn BoardComponent(
                         }
                     }
 
+                    
                     CardComponent { 
                         position: get_pos(depot, i),
                         width: card_width,
@@ -202,6 +222,8 @@ pub fn BoardComponent(
                             ev.prevent_default();
                             oncontextmenu.call(BoardPos::new(depot, i))
                         },
+
+                        is_death: is_death(depot),
                     }
                 }
             }

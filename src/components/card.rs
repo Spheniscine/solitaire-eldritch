@@ -29,6 +29,9 @@ pub fn CardComponent<C: PartialEq + Clone + 'static, S: SkinTrait<C> + 'static>(
     ondoubleclick: EventHandler<MouseEvent>,
     #[props(default)]
     oncontextmenu: EventHandler<MouseEvent>,
+
+    #[props(default)]
+    is_death: bool,
 ) -> Element {
     let pt = width / 12.;
     let pt = |x: f32| {
@@ -55,6 +58,7 @@ pub fn CardComponent<C: PartialEq + Clone + 'static, S: SkinTrait<C> + 'static>(
                 text_align: "center",
                 padding: pt(0.25),
                 color: skin.get_color(card, !color_mode),
+                class: if is_death {"death"},
 
                 onclick, ondoubleclick, oncontextmenu,
 

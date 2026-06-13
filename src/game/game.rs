@@ -75,6 +75,10 @@ impl GameState {
         };
 
         res.new_game();
+
+        // testing death; todo remove
+        res.board.depots[DepotRole::Death.id(0)].push(Card { rank: 13, suit: Suit::Spades });
+
         res
     }
 
@@ -84,7 +88,7 @@ impl GameState {
         const FRONT_MONSTER_RANGE: RangeInclusive<usize> = 1..=3;
         const MAX_MONSTER_CLUMP: usize = 3; 
 
-        let mut front_monsters = DepotRole::Tableau.range()
+        let front_monsters = DepotRole::Tableau.range()
             .flat_map(|d| {
                 self.board.depots[d].iter().rev().take_while(|&&c| c.is_monster())
             }).count();
@@ -159,6 +163,7 @@ impl GameState {
 
     pub fn onclick(&mut self, pos: BoardPos) {
         if self.is_busy() { return; }
+        if self.is_over() { return; }
 
         if let Some(src) = self.board.selected {
             if pos == src { 
@@ -185,6 +190,7 @@ impl GameState {
     // right-click is shortcut for reverse-stacking
     pub fn oncontextmenu(&mut self, pos: BoardPos) {
         if self.is_busy() { return; }
+        if self.is_over() { return; }
 
         if let Some(src) = self.board.selected {
             let dest = BoardPos { depot_index: pos.depot_index, card_index: pos.card_index.wrapping_add(1) };
@@ -197,12 +203,22 @@ impl GameState {
 
     pub fn check_auto_moves(&mut self) {
         if self.is_busy() { return; }
+        if self.is_over() { return; }
         //todo
     }
 
     pub fn is_won(&self) -> bool {
         false
         //todo
+    }
+
+    pub fn is_lost(&self) -> bool {
+        false
+        //todo
+    }
+
+    pub fn is_over(&self) -> bool {
+        self.is_won() || self.is_lost()
     }
 
     pub fn advance_animations(&mut self, key: AnimationKey) {

@@ -172,3 +172,16 @@ button {
    height: 1px;
    width: 1px;
 }
+
+@keyframes death {
+    0% {
+        transform: translate(var(--translateX), var(--translateY));
+        animation-timing-function: ease-in;
+    }
+    100% {
+        transform: scale(4.13) rotate(13deg);
+    }
+}
+.death {
+    transform: scale(4.13) rotate(13deg);
+}
