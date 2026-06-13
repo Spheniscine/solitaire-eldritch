@@ -6,7 +6,7 @@ pub const KATEX_MAIN: &str = "KaTeX_Main";
 
 /// special rendering for rank 1 by putting a superscript 7 after it, as a reminder of the special ability in this game
 #[component]
-fn OneSupSeven() -> Element {
+pub fn OneSupSeven() -> Element {
     rsx! {
         span {
             letter_spacing: "-0.05em",
