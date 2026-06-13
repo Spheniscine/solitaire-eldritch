@@ -187,6 +187,7 @@ button {
 }
 .death-anim {
     animation: 0.2s death;
+    transform: scale(4.13) rotate(13deg);
 }
 
 @keyframes fading {
