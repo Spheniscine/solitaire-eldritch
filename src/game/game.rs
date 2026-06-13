@@ -140,6 +140,12 @@ impl GameState {
         self.history.push(ActionRecord { pos1, pos2, rev })
     }
 
+    pub fn can_stack(&self, back: Card, front: Card) -> bool {
+        !back.is_monster() && 
+            back.suit != front.suit && 
+            back.rank.abs_diff(front.rank) == 1
+    }
+
     pub fn can_select(&self, pos: BoardPos) -> bool {
         let depot = pos.depot_index;
         let ord = pos.card_index;
@@ -147,8 +153,16 @@ impl GameState {
         if ord >= self.board.depots[depot].len() {
             return false;
         }
+        let slice = &self.board.depots[depot][ord..];
 
-        true // todo
+        let Some(role) = DepotRole::role(depot) else { return false };
+        match role {
+            DepotRole::Tableau => slice.windows(2).all(|w| self.can_stack(w[0], w[1])),
+            DepotRole::Monster => false,
+            DepotRole::Attack => { slice.len() <= 1 },
+            DepotRole::Graveyard => false,
+            DepotRole::Death => false,
+        }
     }
 
     pub fn can_move(&self, pos1: BoardPos, pos2: BoardPos) -> bool {
@@ -158,11 +172,22 @@ impl GameState {
         let num_moved = depot1.len() - pos1.card_index;
         if pos2.card_index != depot2.len() { return false; }
         
-        true // todo
+        let card = depot1[pos1.card_index];
+        let Some((role, ix)) = DepotRole::role_and_subindex(pos2.depot_index) else { return false };
+        match role {
+            DepotRole::Tableau => depot2.last().is_none_or(|&c| self.can_stack(c, card)),
+            DepotRole::Monster => false,
+            DepotRole::Attack => {
+                let monster_depot = &self.board.depots[DepotRole::Monster.id(ix / ATTACK_SLOTS_PER_MONSTER)];
+                !monster_depot.is_empty() && depot2.is_empty() && num_moved == 1
+            },
+            DepotRole::Graveyard => false,
+            DepotRole::Death => false,
+        }
     }
 
     pub fn can_rev_move(&self, pos1: BoardPos, pos2: BoardPos) -> bool {
-        self.can_move(pos1, pos2) // todo
+        self.can_move(self.board.last_pos(pos1.depot_index), pos2)
     }
 
     pub fn onclick(&mut self, pos: BoardPos) {
