@@ -22,6 +22,29 @@ pub fn OneSupSeven() -> Element {
     }
 }
 
+impl Skin {
+    fn render_suit_internal(&self, card: &Card, text_mode: bool) -> Element {
+        if self.suits == SuitSkin::Animals {
+            rsx! {
+                Emoji { 
+                    text: self.suits.suit_symbol(card.suit)
+                }
+            }
+        } else {
+            rsx! {
+                span {
+                    font_family: self.suits.font(),
+                    position: if !text_mode && (self.suits == SuitSkin::Shapes || self.suits == SuitSkin::Mystique) {"relative"},
+                    top: if !text_mode && self.suits == SuitSkin::Shapes {"0.11em"}
+                        else if !text_mode && self.suits == SuitSkin::Mystique {"-0.1em"},
+                    font_weight: if self.suits == SuitSkin::Mystique {"bold"},
+                    {self.suits.suit_symbol(card.suit)}
+                }
+            }
+        }
+    }
+}
+
 impl SkinTrait<Card> for Skin {
     fn get_color(&self, card: &Card, mode: ColorMode) -> String {
         self.colors.color(card.suit, mode).to_string()
@@ -42,23 +65,10 @@ impl SkinTrait<Card> for Skin {
     }
 
     fn render_suit(&self, card: &Card) -> Element {
-        if self.suits == SuitSkin::Animals {
-            rsx! {
-                Emoji { 
-                    text: self.suits.suit_symbol(card.suit)
-                }
-            }
-        } else {
-            rsx! {
-                span {
-                    font_family: self.suits.font(),
-                    position: if self.suits == SuitSkin::Shapes || self.suits == SuitSkin::Mystique {"relative"},
-                    top: if self.suits == SuitSkin::Shapes {"0.11em"}
-                        else if self.suits == SuitSkin::Mystique {"-0.1em"},
-                    font_weight: if self.suits == SuitSkin::Mystique {"bold"},
-                    {self.suits.suit_symbol(card.suit)}
-                }
-            }
-        }
+        self.render_suit_internal(card, false)
+    }
+
+    fn render_suit_text(&self, card: &Card) -> Element {
+        self.render_suit_internal(card, true)
     }
 }

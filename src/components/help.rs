@@ -1,6 +1,6 @@
 use dioxus::prelude::*;
 
-use crate::{components::{CardText, OneSupSeven, VIDEO_GAMEPLAY, rem, skin::KATEX_MAIN}, game::{Card, ColorMode, GameState, RANK_MAX, RANK_MIN, RankSkin, ScreenState, Skin, Suit}};
+use crate::{components::{CardText, OneSupSeven, VIDEO_GAMEPLAY, rem, skin::KATEX_MAIN}, game::{Card, ColorMode, GameState, RankSkin, ScreenState, Suit}};
 
 #[component]
 fn Emph(children: Element) -> Element {
@@ -56,13 +56,18 @@ pub fn Help(game_state: Signal<GameState>) -> Element {
             "(e.g. ",
             CardText { card: Card { rank: 10, suit: Suit::Spades }, skin, color_mode: ColorMode::Light },
             " can be defeated by "
+
+            CardText { card: Card { rank: 1, suit: Suit::Diamonds }, skin, color_mode: ColorMode::Light },
+            " + "
+            CardText { card: Card { rank: 9, suit: Suit::Clubs }, skin, color_mode: ColorMode::Light },
+            
+            ", or ",
+            
             CardText { card: Card { rank: 1, suit: Suit::Spades }, skin, color_mode: ColorMode::Light },
             " + "
             CardText { card: Card { rank: 3, suit: Suit::Hearts }, skin, color_mode: ColorMode::Light },
-            ", or ",
-            CardText { card: Card { rank: 1, suit: Suit::Diamonds }, skin, color_mode: ColorMode::Light },
-            " + "
-            CardText { card: Card { rank: 9, suit: Suit::Clubs }, skin, color_mode: ColorMode::Light }, ")"
+
+            ")"
         }
     };
 
