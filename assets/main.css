@@ -188,3 +188,12 @@ button {
 .death-anim {
     animation: 0.2s death;
 }
+
+@keyframes fading {
+    0% {opacity:1; animation-timing-function: ease-in;}
+    100% {opacity:0}
+}
+.fading {
+    animation: 0.2s fading;
+    opacity: 0;
+}

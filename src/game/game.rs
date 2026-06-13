@@ -76,10 +76,10 @@ impl GameState {
 
         res.new_game();
 
-        // testing death; todo remove
-        res.board.animation_acts.push(crate::game::AnimationAct::Move { 
-            cards: vec![Card { rank: 13, suit: Suit::Hearts }], pos1: BoardPos::new(0, 13), 
-            pos2: BoardPos::new(DepotRole::Death.id(0), 0), rev: false });
+        //// testing death;
+        // res.board.animation_acts.push(crate::game::AnimationAct::Move { 
+        //     cards: vec![Card { rank: 13, suit: Suit::Hearts }], pos1: BoardPos::new(0, 13), 
+        //     pos2: BoardPos::new(DepotRole::Death.id(0), 0), rev: false });
 
         res
     }

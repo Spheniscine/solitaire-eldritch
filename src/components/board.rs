@@ -1,22 +1,7 @@
 use dioxus::prelude::*;
 use glam::Vec2;
 
-use crate::{components::{CARD_BORDER_RADIUS_RATIO, CARD_HEIGHT_RATIO, CardComponent, CardFrame, Movement, TranslateVars, rem}, game::{ATTACK_SLOTS_PER_MONSTER, AnimationAct, AnimationKey, Board, BoardPos, Card, ColorMode, DepotRole, MONSTER_RANK_START, NUM_DEPOTS, Skin}};
-
-#[component]
-fn IsDeathDepot(depot: usize, children: Element) -> Element {
-    let is_death = DepotRole::role(depot) == Some(DepotRole::Death);
-    rsx! {
-        if is_death {
-            div {
-                class: "death",
-                {children}
-            }
-        } else {
-            {children}
-        }
-    }
-}
+use crate::{components::{CARD_BORDER_RADIUS_RATIO, CARD_HEIGHT_RATIO, CardComponent, CardFrame, Collision, Movement, TranslateVars, rem}, game::{ATTACK_SLOTS_PER_MONSTER, AnimationAct, AnimationKey, Board, BoardPos, Card, ColorMode, DepotRole, NUM_DEPOTS, Skin}};
 
 #[component]
 pub fn BoardComponent(
@@ -116,6 +101,10 @@ pub fn BoardComponent(
         DepotRole::role(depot) == Some(DepotRole::Death)
     };
 
+    let is_monster_depot = |depot: usize| {
+        DepotRole::role(depot) == Some(DepotRole::Monster)
+    };
+
     let selected_height = if let Some(BoardPos { depot_index, card_index }) = board.selected {
         let d = if DepotRole::role(depot_index).unwrap() == DepotRole::Tableau {
             board.depots[depot_index].len() - card_index - 1
@@ -164,6 +153,13 @@ pub fn BoardComponent(
                                     color_mode: color_mode(*card),
                                     skin,
                                 }
+                            }
+                        }
+
+                        if is_monster_depot(pos1.depot_index) {
+                            Collision { 
+                                position: p1 + Vec2::new(0., -1.),
+                                size: 9.,
                             }
                         }
                     };
